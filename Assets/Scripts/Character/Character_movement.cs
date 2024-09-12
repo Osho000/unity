@@ -10,12 +10,16 @@ public class Character_movement : MonoBehaviour
     Vector2 moveDirection;
     float moveX;
     float moveY;
-    
-    
+    Animator animator;
+    float moveXidle;
+    float moveYidle;
+
+
     // Start is called before the first frame update
     void Start()
     {
         characterController = GetComponent<CharacterController>();
+        animator = GetComponent<Animator>();
     }
 
     // Update is called once per frame
@@ -25,11 +29,40 @@ public class Character_movement : MonoBehaviour
         moveY = Input.GetAxisRaw("Vertical");
 
         moveDirection = new Vector2(moveX, moveY).normalized;
-        
+        if (moveX != 0 || moveY != 0)
+        {
+            Animate(moveX, moveY, 1);
+            moveXidle = moveX;
+            moveYidle = moveY;
+            Debug.Log(moveX + " " + moveY);
+        }
+        else {
+            Animate(moveXidle, moveYidle, 0);
+
+
+        } 
     }
+
 
     private void FixedUpdate()
     {
         characterController.Move(moveDirection * moveSpeed * Time.deltaTime);
+        
+    }
+
+    void Animate(float moveX, float moveY, int layer)
+    {
+        
+        switch (layer)
+        {
+            case 0: animator.SetLayerWeight(0, 1);
+                    animator.SetLayerWeight(1, 0);
+                break;
+            case 1: animator.SetLayerWeight(1, 1);
+                    animator.SetLayerWeight(0, 0);
+                break;
+        }
+        animator.SetFloat("MoveX", moveX);
+        animator.SetFloat("MoveY", moveY);
     }
 }
