@@ -13,16 +13,21 @@ public class Character_movement : MonoBehaviour
     Animator animator;
     float moveXidle;
     float moveYidle;
+    Vector3 direction;
+    public float cooldown = 3f;
+    private float lastAttack = -9999f;
+
+    public GameObject bulletPref;
 
 
-    // Start is called before the first frame update
+
     void Start()
     {
         characterController = GetComponent<CharacterController>();
         animator = GetComponent<Animator>();
     }
 
-    // Update is called once per frame
+  
     void Update()
     {
         moveX = Input.GetAxisRaw("Horizontal");
@@ -36,11 +41,17 @@ public class Character_movement : MonoBehaviour
             moveYidle = moveY;
             Debug.Log(moveX + " " + moveY);
         }
-        else {
+        else 
+        {
+
             Animate(moveXidle, moveYidle, 0);
 
 
-        } 
+        }
+        if (Input.GetMouseButtonDown(0))
+            Attack();
+        else
+            animator.SetBool("isAttack", false);
     }
 
 
@@ -64,5 +75,26 @@ public class Character_movement : MonoBehaviour
         }
         animator.SetFloat("MoveX", moveX);
         animator.SetFloat("MoveY", moveY);
+    }
+
+    void Attack()
+    {
+        if (Time.time > lastAttack + cooldown)
+        {
+            animator.SetBool("isAttack", true);
+            animator.SetFloat("MoveX", moveXidle);
+            animator.SetFloat("MoveY", moveYidle);
+
+            direction = Input.mousePosition;
+            direction.z = 0f;
+            direction = Camera.main.ScreenToWorldPoint(direction);
+            direction = direction - transform.position;
+
+            GameObject bulletInstance = Instantiate(bulletPref, transform.position, Quaternion.identity);
+            bulletInstance.GetComponent<Rigidbody2D>().velocity = direction * 5f;
+
+            Destroy(bulletInstance);
+            lastAttack = Time.time;
+        }
     }
 }
