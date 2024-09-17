@@ -19,15 +19,12 @@ public class Character_movement : MonoBehaviour
 
     public GameObject bulletPref;
 
-
-
     void Start()
     {
         characterController = GetComponent<CharacterController>();
         animator = GetComponent<Animator>();
     }
 
-  
     void Update()
     {
         moveX = Input.GetAxisRaw("Horizontal");
@@ -36,41 +33,44 @@ public class Character_movement : MonoBehaviour
         moveDirection = new Vector2(moveX, moveY).normalized;
         if (moveX != 0 || moveY != 0)
         {
-            Animate(moveX, moveY, 1);
+            Animate(moveX, moveY, 1);  // ֲûחמג לועמהא Animate
             moveXidle = moveX;
             moveYidle = moveY;
-            Debug.Log(moveX + " " + moveY);
         }
-        else 
-        {
-
-            Animate(moveXidle, moveYidle, 0);
-
-
-        }
-        if (Input.GetMouseButtonDown(0))
-            Attack();
         else
-            animator.SetBool("isAttack", false);
-    }
+        {
+            Animate(moveXidle, moveYidle, 0);  // ֲûחמג לועמהא Animate
+        }
 
+        if (Input.GetMouseButtonDown(0))
+        {
+            if (Time.time > lastAttack + cooldown)
+            {
+                Attack();
+            }
+        }
+        else
+        {
+            animator.SetBool("isAttack", false);
+        }
+    }
 
     private void FixedUpdate()
     {
         characterController.Move(moveDirection * moveSpeed * Time.deltaTime);
-        
     }
 
     void Animate(float moveX, float moveY, int layer)
     {
-        
         switch (layer)
         {
-            case 0: animator.SetLayerWeight(0, 1);
-                    animator.SetLayerWeight(1, 0);
+            case 0:
+                animator.SetLayerWeight(0, 1);
+                animator.SetLayerWeight(1, 0);
                 break;
-            case 1: animator.SetLayerWeight(1, 1);
-                    animator.SetLayerWeight(0, 0);
+            case 1:
+                animator.SetLayerWeight(1, 1);
+                animator.SetLayerWeight(0, 0);
                 break;
         }
         animator.SetFloat("MoveX", moveX);
@@ -79,22 +79,19 @@ public class Character_movement : MonoBehaviour
 
     void Attack()
     {
-        if (Time.time > lastAttack + cooldown)
-        {
-            animator.SetBool("isAttack", true);
-            animator.SetFloat("MoveX", moveXidle);
-            animator.SetFloat("MoveY", moveYidle);
+        animator.SetBool("isAttack", true);
+        animator.SetFloat("MoveX", moveXidle);
+        animator.SetFloat("MoveY", moveYidle);
 
-            direction = Input.mousePosition;
-            direction.z = 0f;
-            direction = Camera.main.ScreenToWorldPoint(direction);
-            direction = direction - transform.position;
+        direction = Input.mousePosition;
+        direction.z = 0f;
+        direction = Camera.main.ScreenToWorldPoint(direction);
+        direction = (direction - transform.position).normalized;
 
-            GameObject bulletInstance = Instantiate(bulletPref, transform.position, Quaternion.identity);
-            bulletInstance.GetComponent<Rigidbody2D>().velocity = direction * 5f;
+        GameObject bulletInstance = Instantiate(bulletPref, transform.position, Quaternion.identity);
+        bulletInstance.GetComponent<Rigidbody2D>().velocity = direction * 5f;
 
-            Destroy(bulletInstance);
-            lastAttack = Time.time;
-        }
+        Destroy(bulletInstance, 2f);
+        lastAttack = Time.time;
     }
 }
